@@ -9,7 +9,7 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new LoginRegister(),
+      home: new LoginRegister(), //interface du formulaire
     );
   }
 }

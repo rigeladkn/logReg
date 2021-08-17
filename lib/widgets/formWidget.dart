@@ -1,17 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:loginregister/utils/BaseAuth.dart';
 
+//définit si l'utilisateur ou connecté ou pas
 enum AuthStatus {
   NOT_DETERMINED,
   NOT_LOGGED_IN,
   LOGGED_IN,
 }
 
-
 class FormWidget extends StatefulWidget {
-
   @override
   _FormWidgetState createState() => _FormWidgetState();
 }
@@ -23,66 +23,73 @@ class _FormWidgetState extends State<FormWidget> {
   bool _isLoading;
   String _userId;
   AuthStatus _authStatus;
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final Auth auth = new Auth();
   final _formKey = new GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return new Form(
-      key: _formKey,
+        key: _formKey,
         child: new ListView(
           shrinkWrap: true,
-      children: [
-        showLogo(),
-        showEmailInputField(),
-        showPasswordInputField(),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: new RichText(
-            textAlign: TextAlign.center,
-            text: new TextSpan(
-            text : _isLoginPage ? "Vous n'avez pas encore de compte ? "  : " Vous avez déjà un compte ?",
-            style: new TextStyle(color : Colors.grey, fontSize: 13.0),
-            
-            children: <TextSpan>[
-              new TextSpan(
-                text : _isLoginPage ? " Créer un compte"  : " Se connecter",
-                style: new TextStyle(
-                  color : Colors.blue,
-                ),
-                recognizer: new TapGestureRecognizer()..onTap = (){
-                  setState(() {
-                    _isLoginPage = !_isLoginPage;
-                  });
-                },
-              ),
-            ]
-          )),
-        ),
-        new Padding(padding: EdgeInsets.only(bottom : 40.0)),
-        Row(
           children: [
-            new Padding(padding: EdgeInsets.only(left : 60.0)),
-            new Expanded(
-                      child: new MaterialButton(
-                        padding: EdgeInsets.all(12.0),
-                color: Colors.blue,
-                child: new Text(_isLoginPage ? 'Login' : 'Sign up' , style: new TextStyle(color : Colors.white),),
-                shape: new RoundedRectangleBorder(
-                    borderRadius: new BorderRadius.all(Radius.circular(8.0))),
-                onPressed: () => validateAndSubmit(),
-              ),
+            showLogo(),
+            showEmailInputField(),
+            showPasswordInputField(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: new RichText(
+                  textAlign: TextAlign.center,
+                  text: new TextSpan(
+                      text: _isLoginPage
+                          ? "Vous n'avez pas encore de compte ? "
+                          : " Vous avez déjà un compte ?",
+                      style: new TextStyle(color: Colors.grey, fontSize: 13.0),
+                      children: <TextSpan>[
+                        new TextSpan(
+                          text: _isLoginPage
+                              ? " Créer un compte"
+                              : " Se connecter",
+                          style: new TextStyle(
+                            color: Colors.blue,
+                          ),
+                          recognizer: new TapGestureRecognizer()
+                            ..onTap = () {
+                              setState(() {
+                                _isLoginPage = !_isLoginPage;
+                              });
+                            },
+                        ),
+                      ])),
             ),
-            new Padding(padding: EdgeInsets.only(left : 60.0)),
+            new Padding(padding: EdgeInsets.only(bottom: 40.0)),
+            Row(
+              children: [
+                new Padding(padding: EdgeInsets.only(left: 60.0)),
+                new Expanded(
+                  child: new MaterialButton(
+                    padding: EdgeInsets.all(12.0),
+                    color: Colors.blue,
+                    child: new Text(
+                      _isLoginPage ? 'Login' : 'Sign up',
+                      style: new TextStyle(color: Colors.white),
+                    ),
+                    shape: new RoundedRectangleBorder(
+                        borderRadius:
+                            new BorderRadius.all(Radius.circular(8.0))),
+                    onPressed: () => validateAndSubmit(),
+                  ),
+                ),
+                new Padding(padding: EdgeInsets.only(left: 60.0)),
+              ],
+            ),
+            forceCrashButton(),
           ],
-        ),
-        // new RichText(text:),
-      ],
-    ));
+        ));
   }
 
   Hero showLogo() {
+    //affiche le logo
     return new Hero(
         tag: 'hero',
         child: new Padding(
@@ -96,6 +103,7 @@ class _FormWidgetState extends State<FormWidget> {
   }
 
   Padding showEmailInputField() {
+    //affiche le champ de saisie de l'email
     return new Padding(
       padding: EdgeInsets.all(8.0),
       child: new TextFormField(
@@ -104,7 +112,7 @@ class _FormWidgetState extends State<FormWidget> {
         autofocus: false,
         decoration: new InputDecoration(
           hintText: 'Email..',
-           hintStyle: new TextStyle(color: Colors.grey),
+          hintStyle: new TextStyle(color: Colors.grey),
           icon: new Icon(Icons.email, color: Colors.grey),
         ),
         validator: (value) => value.isEmpty ? 'Email requis !' : null,
@@ -114,6 +122,7 @@ class _FormWidgetState extends State<FormWidget> {
   }
 
   Padding showPasswordInputField() {
+    //affiche le champ de saisie du mot de passe
     return new Padding(
       padding: EdgeInsets.all(8.0),
       child: new TextFormField(
@@ -121,8 +130,8 @@ class _FormWidgetState extends State<FormWidget> {
         autofocus: false,
         obscureText: true,
         decoration: new InputDecoration(
-           hintText:'Password..',
-           hintStyle: new TextStyle(color: Colors.grey),
+          hintText: 'Password..',
+          hintStyle: new TextStyle(color: Colors.grey),
           icon: new Icon(Icons.person, color: Colors.grey),
         ),
         validator: (value) => value.isEmpty ? 'Password requis !' : null,
@@ -132,6 +141,7 @@ class _FormWidgetState extends State<FormWidget> {
   }
 
   void validateAndSubmit() async {
+    //est exécutée au clic du bouton d'envoi des données
     setState(() {
       _isLoading = true;
     });
@@ -146,6 +156,7 @@ class _FormWidgetState extends State<FormWidget> {
   }
 
   void loginCallback() {
+    //pour mettre à jour authStatus si l'utilisateur est connecté
     auth.getCurrentUser().then((user) {
       setState(() {
         if (user != null) {
@@ -156,12 +167,29 @@ class _FormWidgetState extends State<FormWidget> {
     });
   }
 
-    void logoutCallback() {
+  void logoutCallback() {
+    //pour mettre à jour authStatus si l'utilisateur est déconnecté
     setState(() {
       _authStatus = AuthStatus.NOT_LOGGED_IN;
       _userId = "";
     });
   }
 
-}
+  Widget forceCrashButton() {
+    //pour forcer le crash au clic du bouton Crash et envoyer un log à CrashAnalytics
+    return new MaterialButton(
+        child: new Text(
+          "Crash",
+          style: new TextStyle(color: Colors.white),
+        ),
+        color: Colors.red,
+        onPressed: () {
+          //throw new Exception("Appui sur le bouton crash");
+          FirebaseCrashlytics.instance.crash(); //forcer le crash
+          //FirebaseCrashlytics.instance.recordFlutterError(flutterErrorDetails);
 
+          FirebaseCrashlytics.instance
+              .log("Crash ici => bouton crash"); //envoyer un log
+        });
+  }
+}
