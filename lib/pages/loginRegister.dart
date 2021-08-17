@@ -18,6 +18,8 @@ class _LoginRegisterState extends State<LoginRegister> {
       ),
       body: new Stack(children: [
         new FormWidget(),
+        //formulaire proprement dit
+        //afficher un CircularProgressIndicator si l'envoi des données est en cours
         _isLoading
             ? new CircularProgressIndicator()
             : new Container(height: 0.0, width: 0.0)
